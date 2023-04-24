@@ -1,4 +1,6 @@
 const MongoClient = require('mongodb').MongoClient
+const Joi = require('joi');
+
 
 
 const auditLogPost = async (req, res) => {
@@ -6,6 +8,8 @@ const auditLogPost = async (req, res) => {
     const auditLog = {
         requestBody: JSON.stringify(req.body.requestBody),
         requestHeader: JSON.stringify(req.body.requestHeader),
+        endPoint: JSON.stringify(req.body.endPoint),
+        finished: req.body.finished,
         ip :  req.body.ip,
         action : req.body.action,
         statusCode : req.body.statusCode,
@@ -13,8 +17,46 @@ const auditLogPost = async (req, res) => {
         userType : req.body.userType,
         modelType : req.body.modelType,
         modelId : req.body.modelId,
+        changed : JSON.stringify(req.body.changed),
         metaData : JSON.stringify(req.body.metaData),
         createdAt: new Date()
+    }
+
+
+    const schema = Joi.object({
+        requestBody: Joi.object().required(),
+        requestHeader: Joi.object().required(),
+        endPoint : Joi.object().keys(
+            {
+                path: Joi.string().required(),
+                method: Joi.string().required()
+            }
+        ).required(),
+        finished : Joi.boolean().required(),
+        ip: Joi.string().required(),
+        action: Joi.string().required(),
+        statusCode: Joi.number().integer().required(),
+        userId: Joi.number().integer().required(),
+        userType: Joi.string().required(),
+        modelType: Joi.string().required(),
+        modelId: Joi.number().integer().required(),
+        changed: Joi.object().keys(
+            {
+                before: Joi.object().required(),
+                after: Joi.object().required()
+            }
+        ).required(),
+        metaData: Joi.object().required(),
+    });
+
+    const { error } = schema.validate(req.body);
+
+    if (error) {
+        return res.status(400).json({
+            data: { },
+            code: 'failed',
+            message : error.details[0].message
+        })
     }
 
 
@@ -24,7 +66,7 @@ const auditLogPost = async (req, res) => {
         const dbo = db.db(process.env.DB_NAME)
         await dbo.collection("logs").insertOne(auditLog)
         await db.close()
-        res.status(200).json({
+        return  res.status(200).json({
             data: { },
             code: 'success',
             message : 'record created successfully'

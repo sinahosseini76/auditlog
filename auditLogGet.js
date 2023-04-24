@@ -13,33 +13,33 @@ const auditLogGet = async (req, res) => {
         const limit = parseInt(req.query.limit) || 10; // Default to 10 logs per page
         const skip = (page - 1) * limit;
 
-
-
-    
         // Retrieve all logs
         // const logs = await collection.find().sort({ _id: -1 }).skip(skip).limit(limit).toArray();
         const [logs, count] = await Promise.all([
-            logsCollection.find().skip(skip).limit(limit).toArray(),
+            logsCollection.find().sort({ _id: -1 }).skip(skip).limit(limit).toArray(),
             logsCollection.countDocuments()
         ]);
 
         const formattedLogs = logs.map(log => ({
-            requestBody: JSON.parse(log.requestBody),
-            requestHeader: JSON.parse(log.requestHeader),
+            requestBody: JSON.parse(log.requestBody ?? '{}'),
+            requestHeader: JSON.parse(log.requestHeader ?? '{}'),
+            endPoint: JSON.parse(log.endPoint ?? '{}'),
             ip: log.ip,
+            finished: log.finished,
             action: log.action,
             statusCode: log.statusCode,
             userId: log.userId,
             userType: log.userType,
             modelType: log.modelType,
             modelId: log.modelId,
-            metaData: JSON.parse(log.metaData),
+            changed: JSON.parse(log.changed ?? '{}'),
+            metaData: JSON.parse(log.metaData ?? '{}'),
             createdAt : log.createdAt,
             createdAtJalali: moment(log.createdAt).format('jYYYY/jMM/jDD HH:mm:ss')
           }));
     
         // Send response with logs
-        res.status(200).json({
+       return  res.status(200).json({
           data: {
             logs: formattedLogs,
             count,
@@ -50,7 +50,7 @@ const auditLogGet = async (req, res) => {
         });
       } catch (err) {
         console.log('Error retrieving logs', err);
-        res.status(500).json({
+        return res.status(500).json({
           error: {
             message: 'Failed to retrieve logs',
           },
