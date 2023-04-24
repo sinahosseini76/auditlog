@@ -1,9 +1,22 @@
 const MongoClient = require('mongodb').MongoClient
 const Joi = require('joi');
+const authenticate = require("./authenticate");
 
 
 
 const auditLogPost = async (req, res) => {
+
+    const token = req.headers['authorization']
+    const checkedToken = await authenticate(token)
+
+    if (checkedToken.code == 'failed') {
+        return res.status(401).json({
+            message: 'unauthorized',
+            code: 'failed',
+        })
+    }
+
+
 
     const auditLog = {
         requestBody: JSON.stringify(req.body.requestBody),
@@ -63,8 +76,8 @@ const auditLogPost = async (req, res) => {
 
     try {
         const db = await MongoClient.connect(process.env.MONGO_URL)
-        const dbo = db.db(process.env.DB_NAME)
-        await dbo.collection("logs").insertOne(auditLog)
+        const dbo = db.db(checkedToken.data.appName)
+        await dbo.collection(checkedToken.data.collectionName).insertOne(auditLog)
         await db.close()
         return  res.status(200).json({
             data: { },

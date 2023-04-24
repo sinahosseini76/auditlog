@@ -1,13 +1,25 @@
 const MongoClient = require('mongodb').MongoClient
 const moment = require('moment-jalaali');
+const authenticate = require('./authenticate')
+
 
 
 
 const auditLogGet = async (req, res) => {
+    const token = req.headers['authorization']
+    const checkedToken = await authenticate(token)
+
+    if (checkedToken.code == 'failed') {
+        return res.status(401).json({
+            message: 'unauthorized',
+            code: 'failed',
+        })
+    }
+
     try {
         const db = await MongoClient.connect(process.env.MONGO_URL)
-        const dbo = db.db(process.env.DB_NAME)
-        const logsCollection = dbo.collection('logs');
+        const dbo = db.db(checkedToken.data.appName)
+        const logsCollection = dbo.collection(checkedToken.data.collectionName);
 
         const page = parseInt(req.query.page) || 1; // Default to page 1
         const limit = parseInt(req.query.limit) || 10; // Default to 10 logs per page

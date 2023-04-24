@@ -12,12 +12,13 @@ const http = require('http')
 const server = http.createServer(app)
 const auditLogPost = require('./auditLogPost')
 const auditLogGet = require('./auditLogGet')
-
+const createToken = require('./createToken')
 const port = process.env.PORT;
 
 
 app.post('/auditlog',  auditLogPost);
 app.get('/auditlog',  auditLogGet);
+app.post('/generate-token', createToken);
 
 
 
