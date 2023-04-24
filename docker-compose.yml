@@ -1,5 +1,17 @@
 version: '3'
 services:
+  app:
+    container_name : auditlog-microservice
+    build: .
+    ports:
+      - "3003:3003"
+    environment:
+      - NODE_ENV=production
+      - APP_NAME=auditlog-microservice
+    volumes:
+      - ./Web:/app
+    networks:
+      - auditlog_network
   mongo:
     container_name: mongodb
     image: mongo
@@ -7,9 +19,13 @@ services:
       - MONGO_INITDB_ROOT_USERNAME=admin
       - MONGO_INITDB_ROOT_PASSWORD=N62s32N41
     ports:
-      - 27019:27017
+      - 27017:27019
     restart: always
     volumes:
-      - ./mongodb_data:/data/db
-volumes:
-  mongodb_data:
+      - ./Docker/mongodb_data:/data/db
+    networks:
+      - auditlog_network
+networks:
+  auditlog_network:
+    external:
+      name: auditlog_network
