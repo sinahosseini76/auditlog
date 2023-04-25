@@ -19,7 +19,7 @@ services:
       - MONGO_INITDB_ROOT_USERNAME=admin
       - MONGO_INITDB_ROOT_PASSWORD=N62s32N41
     ports:
-      - 27017:27019
+      - 27019:27017
     restart: always
     volumes:
       - ./Docker/mongodb_data:/data/db
