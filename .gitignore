@@ -1,2 +1,7 @@
 .idea
 Docker/mongodb_data
+.idea/auditlog.iml
+.idea/modules.xml
+.idea/php.xml
+.vscode/settings.json
+.idea/vcs.xml
