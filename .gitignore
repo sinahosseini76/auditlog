@@ -5,3 +5,4 @@ Docker/mongodb_data
 .idea/php.xml
 .vscode/settings.json
 .idea/vcs.xml
+.vscode
